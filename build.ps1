@@ -102,7 +102,12 @@ Write-Host ""
 Write-Host ">>> Start-Process -wait -NoNewWindow $msbuildexe /restore:True /p:UseSharedCompilation=false /nr:false /verbosity:m /p:Configuration=$buildType $slnFile"
 Write-Host ""
 Write-Host "msbuildexe: " $msbuildexe
-Start-Process -Wait -PassThru -NoNewWindow $msbuildexe "/r:True /p:UseSharedCompilation=false /nr:false /verbosity:m /p:Configuration=$buildType $slnFile"
+$p = Start-Process -Wait -PassThru -NoNewWindow $msbuildexe "/r:True /p:UseSharedCompilation=false /nr:false /verbosity:m /p:Configuration=$buildType $slnFile"
+
+if($p.ExitCode -ne 0)
+{
+	throw "Build failed."
+}
 popd
 
 foreach($project in $buildConfiguration.SelectNodes("root/projects/src/project"))
