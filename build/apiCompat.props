@@ -15,6 +15,10 @@
 		<ResolvedMatchingContract Include="$(SolutionDir)Tools\apiCompat\contractAssemblies\$(TargetFramework)\$(TargetName).dll " />
 	</ItemGroup>
 
+	<Target Name="CheckIfContractAssemblyExists" Condition="'$(RunApiCompat)' == 'true' AND !Exists('@(ResolvedMatchingContract)')" BeforeTargets="ValidateApiCompatForSrc">
+		<Warning Text="Contract assembly doesn't exist. ApiCompat will not run for the assembly: @(ResolvedMatchingContract)."/>
+	</Target>
+
 	<Target Name="ResolveContractDependencyDirectories" BeforeTargets="ValidateApiCompatForSrc">
 		<ItemGroup>
 			<_DependencyDirectoriesTemp Include="@(ReferencePath->'%(RootDir)%(Directory)')" />
