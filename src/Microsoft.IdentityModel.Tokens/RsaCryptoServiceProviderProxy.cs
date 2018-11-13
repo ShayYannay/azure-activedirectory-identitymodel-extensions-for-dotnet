@@ -36,6 +36,7 @@ namespace Microsoft.IdentityModel.Tokens
     /// <summary>
     /// The purpose of this class is to ensure that we obtain an RsaCryptoServiceProvider that supports SHA-256 signatures.
     /// If the original RsaCryptoServiceProvider doesn't support SHA-256, we create a new one using the same KeyContainer.
+    /// There is NO support for <see cref="CspParameters"/> and <see cref="CspKeyContainerInfo"/> on non-Windows platforms which makes <see cref="RSACryptoServiceProviderProxy"/> Windows-specific class.
     /// </summary>
     public class RSACryptoServiceProviderProxy : RSA
     {
@@ -64,13 +65,18 @@ namespace Microsoft.IdentityModel.Tokens
         /// </summary>
         public override string KeyExchangeAlgorithm => _rsa.KeyExchangeAlgorithm;
 
+#pragma warning disable CS0162 // Disable warning on non-Windows platforms - CS0162: Unreachable code detected
         /// <summary>
         /// Initializes an new instance of <see cref="RSACryptoServiceProviderProxy"/>.
         /// </summary>
         /// <param name="rsa"><see cref="RSACryptoServiceProvider"/></param>
         /// <exception cref="ArgumentNullException">if <paramref name="rsa"/> is null.</exception>
+        /// <exception cref="PlatformNotSupportedException">RSACryptoServiceProviderProxy creation is only supported on Windows platform.</exception>
         public RSACryptoServiceProviderProxy(RSACryptoServiceProvider rsa)
         {
+#if !WINDOWS
+            throw new PlatformNotSupportedException(LogMessages.IDX10688);
+#endif
             if (rsa == null)
                 throw LogHelper.LogArgumentNullException(nameof(rsa));
 
@@ -101,6 +107,7 @@ namespace Microsoft.IdentityModel.Tokens
                 _rsa = rsa;
             }
         }
+#pragma warning restore CS0162
 
         /// <summary>
         /// Decrypts data with the System.Security.Cryptography.RSA algorithm.
