@@ -500,6 +500,23 @@ namespace Microsoft.IdentityModel.JsonWebTokens
         }
 
         /// <summary>
+        /// Tries to get the 'value' corresponding to the provided key from the JWT payload { key, 'value' }.
+        /// </summary>
+        /// <remarks>If the key has no corresponding value, returns false. Otherwise returns true. </remarks>   
+        public bool TryGetPayloadValue<T>(string key, out T value)
+        {
+            if (string.IsNullOrEmpty(key))
+            {
+                value = default(T);
+                return false;
+            }
+
+            var result = Payload.TryGetValue(key, out var jTokenValue);
+            value = jTokenValue == null ? default(T) : jTokenValue.ToObject<T>();
+            return result;
+        }
+
+        /// <summary>
         /// Gets the 'value' corresponding to the provided key from the JWT header { key, 'value' }.
         /// </summary>
         /// <remarks>If the key has no corresponding value, returns null. </remarks>   
@@ -509,6 +526,23 @@ namespace Microsoft.IdentityModel.JsonWebTokens
                 throw LogHelper.LogArgumentNullException(nameof(key));
 
             return Header.Value<T>(key);
+        }
+
+        /// <summary>
+        /// Tries to get the value corresponding to the provided key from the JWT header { key, 'value' }.
+        /// </summary>
+        /// <remarks>If the key has no corresponding value, returns false. Otherwise returns true. </remarks>   
+        public bool TryGetHeaderValue<T>(string key, out T value)
+        {
+            if (string.IsNullOrEmpty(key))
+            {
+                value = default(T);
+                return false;
+            }
+
+            var result = Header.TryGetValue(key, out var jTokenValue);
+            value = jTokenValue == null ? default(T) : jTokenValue.ToObject<T>();
+            return result;
         }
     }
 }
