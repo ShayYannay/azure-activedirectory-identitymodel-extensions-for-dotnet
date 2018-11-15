@@ -36,8 +36,10 @@ namespace Microsoft.IdentityModel.Tokens
     /// <summary>
     /// The purpose of this class is to ensure that we obtain an RsaCryptoServiceProvider that supports SHA-256 signatures.
     /// If the original RsaCryptoServiceProvider doesn't support SHA-256, we create a new one using the same KeyContainer.
-    /// There is NO support for <see cref="CspParameters"/> and <see cref="CspKeyContainerInfo"/> on non-Windows platforms which makes <see cref="RSACryptoServiceProviderProxy"/> Windows-specific class.
     /// </summary>
+    /// <remarks>
+    /// There is NO support for <see cref="CspParameters"/> and <see cref="CspKeyContainerInfo"/> on non-Windows platforms which makes <see cref="RSACryptoServiceProviderProxy"/> Windows-specific class.
+    /// </remarks>
     public class RSACryptoServiceProviderProxy : RSA
     {
         // CryptoApi provider type for an RSA provider supporting sha-256 digital signatures
@@ -71,7 +73,7 @@ namespace Microsoft.IdentityModel.Tokens
         /// </summary>
         /// <param name="rsa"><see cref="RSACryptoServiceProvider"/></param>
         /// <exception cref="ArgumentNullException">if <paramref name="rsa"/> is null.</exception>
-        /// <exception cref="PlatformNotSupportedException">RSACryptoServiceProviderProxy creation is only supported on Windows platform.</exception>
+        /// <exception cref="PlatformNotSupportedException">RSACryptoServiceProviderProxy creation is only supported on Windows.</exception>
         public RSACryptoServiceProviderProxy(RSACryptoServiceProvider rsa)
         {
 #if !WINDOWS
