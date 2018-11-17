@@ -319,11 +319,8 @@ namespace Microsoft.IdentityModel.Tokens
             return X5c.Count > 0;
         }
 
-        internal ECDsa CreateECDsa(string algorithm, bool usePrivateKey)
+        internal ECDsa CreateECDsa(bool usePrivateKey)
         {
-#if !WINDOWS
-            throw new NotImplementedException(LogMessages.IDX10676);
-#endif
             if (Crv == null)
                 throw LogHelper.LogArgumentNullException(nameof(Crv));
 
@@ -333,6 +330,31 @@ namespace Microsoft.IdentityModel.Tokens
             if (Y == null)
                 throw LogHelper.LogArgumentNullException(nameof(Y));
 
+#if !WINDOWS && NETSTANDARD2_0
+            try
+            {
+                var ecParams = new ECParameters
+                {
+                    Curve = GetNamedECCurve(Crv),
+                    Q = {X = Base64UrlEncoder.DecodeBytes(X), Y = Base64UrlEncoder.DecodeBytes(Y)}
+                };
+
+                if (usePrivateKey)
+                {
+                    if (D == null)
+                        throw LogHelper.LogArgumentNullException(nameof(D));
+
+                    ecParams.D = Base64UrlEncoder.DecodeBytes(D);
+                }
+
+                ecParams.Validate();
+                return ECDsa.Create(ecParams);
+            }
+            catch (Exception ex)
+            {
+                throw LogHelper.LogExceptionMessage(new CryptographicException(LogMessages.IDX10689, ex));
+            }
+#else
             GCHandle keyBlobHandle = new GCHandle();
             try
             {
@@ -405,6 +427,7 @@ namespace Microsoft.IdentityModel.Tokens
                 if (keyBlobHandle != null)
                     keyBlobHandle.Free();
             }
+#endif
         }
 
         internal RSAParameters CreateRsaParameters()
@@ -535,5 +558,29 @@ namespace Microsoft.IdentityModel.Tokens
             }
             return (uint)magicNumber;
         }
+#if !WINDOWS && NETSTANDARD2_0
+        /// <summary>
+        /// Returns the elliptic curve corresponding to the curve id.
+        /// </summary>
+        /// <param name="curveId">Represents ecdsa curve -P256, P384, P512</param>
+        private ECCurve GetNamedECCurve(string curveId)
+        {
+            if (string.IsNullOrEmpty(curveId))
+                throw LogHelper.LogArgumentNullException(nameof(curveId));
+
+            switch (curveId)
+            {
+                case JsonWebKeyECTypes.P256:
+                    return ECCurve.NamedCurves.nistP256;
+                case JsonWebKeyECTypes.P384:
+                    return ECCurve.NamedCurves.nistP384;
+                case JsonWebKeyECTypes.P512: // treat 512 as 521. 512 doesn't exist, but we released with "512" instead of "521", so don't break now.
+                case JsonWebKeyECTypes.P521:
+                    return ECCurve.NamedCurves.nistP521;
+                default:
+                    throw LogHelper.LogExceptionMessage(new ArgumentException(LogHelper.FormatInvariant(LogMessages.IDX10645, curveId)));
+            }
+        }
+#endif
     }
 }
