@@ -38,7 +38,7 @@ namespace Microsoft.IdentityModel.Tokens
     /// If the original RsaCryptoServiceProvider doesn't support SHA-256, we create a new one using the same KeyContainer.
     /// </summary>
     /// <remarks>
-    /// There is no support for <see cref="CspParameters"/> and <see cref="CspKeyContainerInfo"/> on non-Windows platforms which makes <see cref="RSACryptoServiceProviderProxy"/> Windows-specific class.
+    /// There is no support for <see cref="CspParameters"/> and <see cref="CspKeyContainerInfo"/> on non-Windows platforms which makes <see cref="RSACryptoServiceProviderProxy"/> a Windows-specific class.
     /// </remarks>
     public class RSACryptoServiceProviderProxy : RSA
     {
