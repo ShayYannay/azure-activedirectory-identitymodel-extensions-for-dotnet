@@ -436,6 +436,7 @@ namespace Microsoft.IdentityModel.Tests
             byte[] ecdsa384KeyBlob = TestUtilities.HexToByteArray("45435334300000009dc6bb9cdc8dac31e3db6e6b5f58f8e3a304e5c08e632705ca9a236f1134646dca526b89f7ea98653962f4a781f2fc9bf479a2d627561b1269548050e6d2c388018b837f4ceba8ee7fe2eefea67c8418ad1e84f60c1309385e573ea5183e9ae8b6d5308a78da207c6e556af2053983321a5f8ac057b787089ee783c99093b9f2afb2f9a1e9a560ad3095b9667aa699fa");
             byte[] ecdsa521KeyBlob = TestUtilities.HexToByteArray("454353364200000001f9f06ea4e00fd3fecc1753af7983b43cb9b692941ee6364616c9c4168845fce804beca7aa23d0a5049910db45dfb61112f4cb02e93ff62af1be203ad248dd70952015ddc31d1ad7411ca5996b8b76a40ea65f286c665225114bec8557365aa4bc79358f8c68b873cb76a1c86a5a394185d8eeb9602b8b968db1e4ac49b7cc51f83c7170055ad9b0b2d0d5d2306a66bf87a256a3739696121eb131e64ae61991ea23db99b397c32df95efb0cb284147a929c65e9f671073ca3c7a084cb9211dceb06c987277");
 
+#if WINDOWS
             CngKey ecdsa256Key = CngKey.Import(ecdsa256KeyBlob, CngKeyBlobFormat.EccPrivateBlob);
             CngKey ecdsa256Public = CngKey.Import(ecdsa256Key.Export(CngKeyBlobFormat.EccPublicBlob), CngKeyBlobFormat.EccPublicBlob);
             CngKey ecdsa384Key = CngKey.Import(ecdsa384KeyBlob, CngKeyBlobFormat.EccPrivateBlob);
@@ -449,10 +450,26 @@ namespace Microsoft.IdentityModel.Tests
             Ecdsa256Key_Public = new ECDsaSecurityKey(new ECDsaCng(ecdsa256Public)) { KeyId = "ECDsa256Key_Public" };
             Ecdsa384Key_Public = new ECDsaSecurityKey(new ECDsaCng(ecdsa384Public)) { KeyId = "ECDsa384Key_Public" };
             Ecdsa521Key_Public = new ECDsaSecurityKey(new ECDsaCng(ecdsa512Public)) { KeyId = "ECDsa521Key_Public" };
+#elif !WINDOWS && NETCOREAPP2_0
+            var Ecdsa256 = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+            var Ecdsa384 = ECDsa.Create(ECCurve.NamedCurves.nistP384);
+            var Ecdsa521 = ECDsa.Create(ECCurve.NamedCurves.nistP521);
+
+            var Ecdsa256_Public = ECDsa.Create(Ecdsa256.ExportParameters(false));
+            var Ecdsa384_Public = ECDsa.Create(Ecdsa384.ExportParameters(false));
+            var Ecdsa521_Public = ECDsa.Create(Ecdsa521.ExportParameters(false));
+
+            Ecdsa256Key = new ECDsaSecurityKey(Ecdsa256) { KeyId = "ECDsa256Key" };
+            Ecdsa384Key = new ECDsaSecurityKey(Ecdsa384) { KeyId = "ECDsa384Key" };
+            Ecdsa521Key = new ECDsaSecurityKey(Ecdsa521) { KeyId = "ECDsa521Key" };
+            Ecdsa256Key_Public = new ECDsaSecurityKey(Ecdsa256_Public) { KeyId = "ECDsa256Key_Public" };
+            Ecdsa384Key_Public = new ECDsaSecurityKey(Ecdsa384_Public) { KeyId = "ECDsa384Key_Public" };
+            Ecdsa521Key_Public = new ECDsaSecurityKey(Ecdsa521_Public) { KeyId = "ECDsa521Key_Public" };
+#endif
 
         }
 
-#if  NET45 || NET452 || NET461
+#if NET45 || NET452 || NET461
         public static RsaSecurityKey RsaSecurityKeyWithCspProvider_2048
         {
             get
@@ -519,7 +536,7 @@ namespace Microsoft.IdentityModel.Tests
         {
             get
             {
-                var rsa = new RSACng();
+                var rsa = RSA.Create();
                 rsa.ImportParameters(RsaParameters_2048);
                 return new RsaSecurityKey(rsa) { KeyId = "RsaSecurityKey_FromRsa_2048" };
             }
@@ -529,7 +546,7 @@ namespace Microsoft.IdentityModel.Tests
         {
             get
             {
-                var rsa = new RSACng();
+                var rsa = RSA.Create();
                 rsa.ImportParameters(RsaParameters_2048_Public);
                 return new RsaSecurityKey(rsa) { KeyId = "RsaSecurityKey_FromRsa_2048_Public" };
             }
