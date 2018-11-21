@@ -113,7 +113,7 @@ namespace Microsoft.IdentityModel.Tokens.Tests
             );
 #endif
 
-#if NETCOREAPP2_0
+#if WINDOWS && NETCOREAPP2_0
             theoryData.Add(
                 "KeyingMaterial.RsaSecurityKeyWithCngProvider_2048",
                 KeyingMaterial.RsaSecurityKeyWithCngProvider_2048,
