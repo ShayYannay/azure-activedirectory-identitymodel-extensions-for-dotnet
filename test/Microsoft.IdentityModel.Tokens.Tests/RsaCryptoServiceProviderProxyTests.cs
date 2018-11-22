@@ -29,7 +29,7 @@
 using System.Security.Cryptography.X509Certificates;
 #endif
 
-#if NET452 || NET461 || NETCOREAPP2_0
+#if WINDOWS && (NET452 || NET461 || NETCOREAPP2_0)
 
 using System;
 using System.Security.Cryptography;
